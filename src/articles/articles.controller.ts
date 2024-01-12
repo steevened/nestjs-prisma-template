@@ -22,20 +22,24 @@ export class ArticlesController {
 
   @Post()
   @ApiCreatedResponse({ type: ArticleEntity })
-  create(@Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.create(createArticleDto);
+  async create(@Body() createArticleDto: CreateArticleDto) {
+    return new ArticleEntity(
+      await this.articlesService.create(createArticleDto),
+    );
   }
 
   @Get()
   @ApiOkResponse({ type: [ArticleEntity] })
-  findAll() {
-    return this.articlesService.findAll();
+  async findAll() {
+    const articles = await this.articlesService.findAll();
+    return articles.map((article) => new ArticleEntity(article));
   }
 
   @Get('drafts')
   @ApiOkResponse({ type: [ArticleEntity] })
-  findDrafts() {
-    return this.articlesService.findDrafts();
+  async findDrafts() {
+    const drafts = await this.articlesService.findDrafts();
+    return drafts.map((draft) => new ArticleEntity(draft));
   }
 
   @Get(':id')
@@ -45,7 +49,7 @@ export class ArticlesController {
     if (!article) {
       throw new NotFoundException(`Article with id ${id} not found`);
     }
-    return article;
+    return new ArticleEntity(await this.articlesService.findOne(id));
   }
 
   @Patch(':id')
